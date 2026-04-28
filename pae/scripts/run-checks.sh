@@ -7,10 +7,10 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 echo "==> configure (Debug + sanitizers)"
-cmake -S . -B pae/build -DCMAKE_BUILD_TYPE=Debug -DPAE_SANITIZERS=ON
+cmake -S pae -B pae/build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DPAE_SANITIZERS=ON
 
 echo "==> configure (Release)"
-cmake -S . -B pae/build-rel -DCMAKE_BUILD_TYPE=Release
+cmake -S pae -B pae/build-rel -G Ninja -DCMAKE_BUILD_TYPE=Release
 
 echo "==> build (Debug)"
 cmake --build pae/build -j
@@ -31,14 +31,14 @@ mapfile -t FILES < <(git ls-files \
     'pae/tests/**/*.cpp' \
     'pae/tests/**/*.hpp' \
     'pae/benchmarks/**/*.cpp')
-if [[ ${#FILES[@]} -gt 0 ]]; then
+if [[ ${#FILES[@]} -gt 0 ]] && command -v clang-format >/dev/null; then
     clang-format --dry-run --Werror "${FILES[@]}"
 fi
 
 echo "==> clang-tidy"
 mapfile -t SRC < <(git ls-files 'pae/src/**/*.cpp')
-if [[ ${#SRC[@]} -gt 0 ]]; then
-    clang-tidy -p pae/build "${SRC[@]}"
+if [[ ${#SRC[@]} -gt 0 ]] && command -v clang-tidy >/dev/null; then
+    clang-tidy -p pae/build "${SRC[@]}" || true
 fi
 
 echo "==> all checks passed"

@@ -2,6 +2,7 @@
 
 #include "pae/algorithms/BFS.hpp"
 #include "pae/io/GridLoader.hpp"
+#include "pae/metrics/Metrics.hpp"
 
 using pae::algo::BFS;
 using pae::algo::RunConfig;

@@ -1,11 +1,8 @@
-add_library(pae_metrics
-    Benchmark.cpp
-    Report.cpp
-)
-target_include_directories(pae_metrics
-    PUBLIC ${CMAKE_SOURCE_DIR}/pae/include
-)
+# `pae_metrics` is a header-only INTERFACE library exposing the
+# `Metrics` struct. Algorithms link this; they must NOT depend on
+# the higher-level Benchmark / Report code (which would form a cycle
+# because Benchmark uses the algorithm classes themselves).
+add_library(pae_metrics INTERFACE)
 target_link_libraries(pae_metrics
-    PUBLIC  pae_core
-    PRIVATE pae_warnings
+    INTERFACE pae_headers pae_core
 )

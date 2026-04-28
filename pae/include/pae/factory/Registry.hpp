@@ -25,8 +25,11 @@ public:
         return s;
     }
 
+    /// Registers (or overwrites) a factory under `name`. Idempotent —
+    /// repeated `registerAll()` calls (e.g. across test cases) replace
+    /// rather than silently keeping stale closures.
     void reg(std::string_view name, Factory f) {
-        map_.emplace(std::string{name}, std::move(f));
+        map_[std::string{name}] = std::move(f);
     }
 
     [[nodiscard]] std::unique_ptr<T> create(std::string_view name) const {

@@ -16,75 +16,75 @@ under the new version heading.
 
 | ID | Title | Owner | Status | Notes |
 |----|-------|-------|--------|-------|
-| F-001 | Top-level repo skeleton (README, AGENTS, SECURITY, LICENSE, .gitignore, .gitattributes, .editorconfig) | `@build` | Completed | this PR / initial scaffold |
+| F-001 | Top-level repo skeleton (README, AGENTS, SECURITY, LICENSE, .gitignore, .gitattributes, .editorconfig) | `@build` | Completed | initial scaffold |
 | F-002 | `.clang-format` + `.clang-tidy` profiles | `@build` | Completed | LLVM-derived |
 | F-003 | `.pre-commit-config.yaml` with clang-format, secrets, large-file checks | `@build` | Completed | |
 | F-004 | Top-level `CMakeLists.txt` delegating to `pae/CMakeLists.txt` | `@build` | Completed | |
-| F-005 | `pae/CMakeLists.txt` builds an empty `pae` binary | `@build` | Pending | wires Catch2 via FetchContent |
-| F-006 | `tests/test_smoke.cpp` passes via CTest | `@qa` | Pending | proves the build/test wiring |
-| F-007 | CI matrix (Linux, macOS, Windows) green on empty repo | `@build` | Pending | |
+| F-005 | `pae/CMakeLists.txt` builds the engine + binary; Catch2 via FetchContent | `@build` | Completed | dep DAG with `pae_headers` interface; split `pae_metrics` (header) ↔ `pae_benchmark` (impl) to break cycle |
+| F-006 | `tests/test_smoke.cpp` passes via CTest | `@qa` | Completed | one of 38 |
+| F-007 | CI matrix (Linux, macOS, Windows) green on empty repo | `@build` | Pending | scaffolded in `.github/workflows/ci.yml`; needs first push |
 
 ## V1 — Vertical slice MVP
 
 | ID | Title | Owner | Status | Notes |
 |----|-------|-------|--------|-------|
-| F-101 | `pae::core::Coord`, `Cell`, `Node`, `Grid` (basic ctor, `inBounds`, `at`, `toIndex`, `neighbors4`) | `@core` | Pending | LLD §2 |
-| F-102 | `pae::io::GridLoader::loadFromFile` + `loadFromString` | `@core` | Pending | LLD §2.5 |
-| F-103 | `pae::heur::IHeuristic` interface | `@heuristic` | Pending | LLD §3.1 |
-| F-104 | `pae::heur::Manhattan` concrete | `@heuristic` | Pending | LLD §3.2 |
-| F-105 | `pae::algo::IPathfinder` + `RunConfig` + `Result` | `@algorithm` | Pending | LLD §4.1 |
-| F-106 | `pae::algo::BFS` concrete | `@algorithm` | Pending | LLD §4.4 |
-| F-107 | `pae::viz::IVisualizer` interface | `@viz` | Pending | LLD §5.1 |
-| F-108 | `pae::viz::NullVisualizer` (no-op) | `@viz` | Pending | LLD §5.3 |
-| F-109 | `pae::viz::CliVisualizer` Final mode (final path only) | `@viz` | Pending | LLD §5.2 |
-| F-110 | `pae::metrics::Metrics` (counters + wall time) | `@perf` | Pending | LLD §6.1 |
-| F-111 | `pae::factory::Registry<T>` + `registerAll()` | `@core` | Pending | LLD §7 |
-| F-112 | `pae::cli::parseArgs` + `pae::App::run` + `main.cpp` | `@core` | Pending | LLD §8 |
-| F-113 | `tests/test_grid.cpp`, `test_grid_loader.cpp`, `test_manhattan.cpp`, `test_bfs.cpp` | `@qa` | Pending | TESTING.md §3 |
-| F-114 | Sample maps `corridor.txt`, `tiny.txt`, `no_path.txt`, `maze_20x20.txt` | `@core` | Pending | |
+| F-101 | `pae::core::Coord`, `Cell`, `Node`, `Grid` (basic ctor, `inBounds`, `at`, `toIndex`, `neighbors4`) | `@core` | Completed | LLD §2 |
+| F-102 | `pae::io::GridLoader::loadFromFile` + `loadFromString` | `@core` | Completed | LLD §2.5; supports comments + weighted cells |
+| F-103 | `pae::heur::IHeuristic` interface | `@heuristic` | Completed | LLD §3.1 |
+| F-104 | `pae::heur::Manhattan` concrete | `@heuristic` | Completed | LLD §3.2 |
+| F-105 | `pae::algo::IPathfinder` + `RunConfig` + `Result` | `@algorithm` | Completed | LLD §4.1 |
+| F-106 | `pae::algo::BFS` concrete | `@algorithm` | Completed | LLD §4.4 |
+| F-107 | `pae::viz::IVisualizer` interface | `@viz` | Completed | LLD §5.1 (5 hooks: start/enqueue/expand/path/complete) |
+| F-108 | `pae::viz::NullVisualizer` (no-op) | `@viz` | Completed | LLD §5.3 |
+| F-109 | `pae::viz::CliVisualizer` Final mode (final path only) | `@viz` | Completed | LLD §5.2 |
+| F-110 | `pae::metrics::Metrics` (counters + wall time) | `@perf` | Completed | LLD §6.1; includes `approxPeakBytes` model |
+| F-111 | `pae::factory::Registry<T>` + `registerAll()` | `@core` | Completed | LLD §7; idempotent re-registration |
+| F-112 | `pae::cli::parseArgs` + `pae::App::run` + `main.cpp` | `@core` | Completed | LLD §8; full exit-code matrix |
+| F-113 | `tests/test_grid.cpp`, `test_grid_loader.cpp`, `test_manhattan.cpp`, `test_bfs.cpp` | `@qa` | Completed | all green |
+| F-114 | Sample maps `corridor.txt`, `tiny.txt`, `no_path.txt`, `maze_20x20.txt` | `@core` | Completed | also `open_arena_20x20.txt`, `weighted_small.txt` |
 
 ## V2 — Algorithm trio
 
 | ID | Title | Owner | Status | Notes |
 |----|-------|-------|--------|-------|
-| F-201 | Per-cell weights in `Grid` | `@core` | Pending | Loader extension |
-| F-202 | `pae::algo::Dijkstra` | `@algorithm` | Pending | LLD §4.3 |
-| F-203 | `pae::algo::AStar` taking `IHeuristic&` | `@algorithm` | Pending | LLD §4.2 |
-| F-204 | `pae::heur::Euclidean` | `@heuristic` | Pending | LLD §3.2 |
-| F-205 | `pae::viz::CliVisualizer::Step` mode + fps cap | `@viz` | Pending | LLD §5.2 |
-| F-206 | Cross-algorithm equivalence test (A\* with `h≡0` ≡ Dijkstra) | `@qa` | Pending | ALGORITHMS.md §4.6 |
-| F-207 | `tests/test_astar.cpp`, `test_dijkstra.cpp`, `test_euclidean.cpp` | `@qa` | Pending | |
-| F-208 | `pae --benchmark` mode prints comparison table | `@perf` | Pending | PERFORMANCE.md §3 |
-| F-209 | Sample maps `weighted_small.txt`, `open_arena_50x50.txt`, `maze_50x50.txt` | `@core` | Pending | |
+| F-201 | Per-cell weights in `Grid` | `@core` | Completed | `weight()`; loader recognises `0`–`9` digits |
+| F-202 | `pae::algo::Dijkstra` | `@algorithm` | Completed | LLD §4.3; lazy decrease-key |
+| F-203 | `pae::algo::AStar` taking `IHeuristic&` | `@algorithm` | Completed | LLD §4.2; staleness check on `gCost` |
+| F-204 | `pae::heur::Euclidean` | `@heuristic` | Completed | LLD §3.2 |
+| F-205 | `pae::viz::CliVisualizer::Step` mode + fps cap | `@viz` | Completed | ANSI clear + 30 fps default cap |
+| F-206 | Cross-algorithm equivalence test (A\* with `h≡0` ≡ Dijkstra) | `@qa` | Completed | `test_cross_algorithm.cpp` (3 fixtures) |
+| F-207 | `tests/test_astar.cpp`, `test_dijkstra.cpp`, `test_euclidean.cpp` | `@qa` | Completed | |
+| F-208 | `pae --benchmark` mode prints comparison table | `@perf` | Completed | with median + p95 |
+| F-209 | Additional sample maps | `@core` | Pending | `maze_50x50.txt`, `open_arena_50x50.txt` (post-1.0) |
 
 ## V3 — Robustness
 
 | ID | Title | Owner | Status | Notes |
 |----|-------|-------|--------|-------|
-| F-301 | `pae::heur::Chebyshev` | `@heuristic` | Pending | LLD §3.2 |
-| F-302 | 8-connectivity (`Grid::neighbors8`, `--diagonal` flag) | `@core` + `@algorithm` | Pending | LLD §2.4 |
-| F-303 | Property tests for heuristic invariants | `@qa` | Pending | TESTING.md §4.1 |
-| F-304 | ASan + UBSan jobs in CI | `@qa` + `@build` | Pending | TESTING.md §6 |
-| F-305 | Edge-case maps (dense obstacle, isolated start, full-blocked goal) | `@qa` | Pending | TESTING.md §3 |
-| F-306 | `--diagonal` + Manhattan combo guard (rejected unless `--allow-inadmissible`) | `@core` | Pending | EC-14 in TESTING.md |
+| F-301 | `pae::heur::Chebyshev` | `@heuristic` | Completed | LLD §3.2 |
+| F-302 | 8-connectivity (`Grid::neighbors8`, `--diagonal` flag) | `@core` + `@algorithm` | Completed | both algorithms branch on `cfg.diagonal` |
+| F-303 | Property tests for heuristic invariants | `@qa` | Completed | non-negativity, symmetry, identity (4096+ cases per heuristic) |
+| F-304 | ASan + UBSan jobs in CI | `@qa` + `@build` | Pending | locally verified clean; CI wiring is in `ci.yml` |
+| F-305 | Edge-case maps (dense obstacle, isolated start, full-blocked goal) | `@qa` | Completed | `no_path.txt` covers full-row blocker |
+| F-306 | `--diagonal` + Manhattan combo guard | `@core` | Completed | App refuses with explanatory error and exit 1 |
 
 ## V4 — Benchmark hardening
 
 | ID | Title | Owner | Status | Notes |
 |----|-------|-------|--------|-------|
-| F-401 | `Benchmark::sweep` with warmup + median + p95 | `@perf` | Pending | PERFORMANCE.md §3 |
-| F-402 | `Report::writeCsv`, `writeJson` | `@perf` | Pending | PERFORMANCE.md §4 |
-| F-403 | `bench_pathfinders.cpp` runs against every map in `pae/maps/` | `@perf` | Pending | |
-| F-404 | NFR-2 perf budget tests in CI | `@perf` + `@build` | Pending | REQUIREMENTS.md §NFR-2 |
-| F-405 | Baselines committed in `pae/benchmarks/baselines/` | `@perf` | Pending | PERFORMANCE.md §9 |
-| F-406 | CI commenter: posts perf delta vs main on PRs | `@build` | Pending | |
+| F-401 | `Benchmark::sweep` with warmup + median + p95 | `@perf` | Completed | `Config{warmup=3, repetitions=30}` defaults |
+| F-402 | `Report::writeCsv`, `writeJson` | `@perf` | Completed | `pae_bench` accepts `--csv`, `--json` |
+| F-403 | `bench_pathfinders.cpp` runs against every map in `pae/maps/` | `@perf` | Completed | via `scripts/run-benchmarks.sh` |
+| F-404 | NFR-2 perf budget tests in CI | `@perf` + `@build` | Pending | `PAE_PERF_BUDGET` option scaffolded |
+| F-405 | Baselines committed in `pae/benchmarks/baselines/` | `@perf` | Pending | will be populated on first CI run |
+| F-406 | CI commenter: posts perf delta vs main on PRs | `@build` | Pending | needs `auto-ticket.yml` extension |
 
 ## V5 — Release polish
 
 | ID | Title | Owner | Status | Notes |
 |----|-------|-------|--------|-------|
-| F-501 | `--help`, `--version`, exit-code matrix matches REQUIREMENTS.md §FR-6 | `@core` | Pending | |
-| F-502 | `docs/CHANGELOG.md` `[1.0.0]` entry | all | Pending | |
+| F-501 | `--help`, `--version`, exit-code matrix matches REQUIREMENTS.md §FR-6 | `@core` | Completed | exit 0 success, 1 user-error / not-found, 2 engine-error |
+| F-502 | `docs/CHANGELOG.md` `[1.0.0]` entry | all | Pending | block currently in `[Unreleased]` |
 | F-503 | Tag `v1.0.0`; release workflow attaches Linux/macOS/Windows binaries | `@build` | Pending | |
 | F-504 | README quick-start verified by fresh-clone CI job | `@build` | Pending | |
 

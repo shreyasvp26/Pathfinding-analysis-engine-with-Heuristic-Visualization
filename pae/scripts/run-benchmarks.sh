@@ -5,9 +5,12 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-if [[ ! -x pae/build-rel/benchmarks/pae_bench ]]; then
+BENCH=pae/build-rel/benchmarks/pae_bench
+
+if [[ ! -x "$BENCH" ]]; then
     echo "pae_bench not built. Building Release first..."
-    cmake -S . -B pae/build-rel -DCMAKE_BUILD_TYPE=Release
+    cmake -S pae -B pae/build-rel -G Ninja -DCMAKE_BUILD_TYPE=Release \
+        -DPAE_BUILD_TESTS=OFF
     cmake --build pae/build-rel -j
 fi
 
@@ -17,7 +20,7 @@ ts=$(date -u +"%Y%m%dT%H%M%SZ")
 for m in pae/maps/*.txt; do
     out="pae/benchmarks/results/$(basename "${m%.txt}")_${ts}.json"
     echo "==> $m -> $out"
-    ./pae/build-rel/benchmarks/pae_bench --map "$m" --json > "$out"
+    "$BENCH" --map "$m" --json > "$out"
 done
 
 echo "Done. Results in pae/benchmarks/results/"

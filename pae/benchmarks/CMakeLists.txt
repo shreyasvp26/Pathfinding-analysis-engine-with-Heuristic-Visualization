@@ -3,12 +3,14 @@ add_executable(pae_bench
 )
 target_link_libraries(pae_bench
     PRIVATE
+        pae_headers
         pae_core
         pae_io
         pae_heuristics
         pae_algorithms
         pae_visualization
         pae_metrics
+        pae_benchmark
         pae_factory
         pae_warnings
 )

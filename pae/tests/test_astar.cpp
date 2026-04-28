@@ -3,6 +3,7 @@
 #include "pae/algorithms/AStar.hpp"
 #include "pae/heuristics/Manhattan.hpp"
 #include "pae/io/GridLoader.hpp"
+#include "pae/metrics/Metrics.hpp"
 
 using pae::algo::AStar;
 using pae::algo::RunConfig;

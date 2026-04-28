@@ -2,6 +2,7 @@
 
 #include "pae/algorithms/Dijkstra.hpp"
 #include "pae/io/GridLoader.hpp"
+#include "pae/metrics/Metrics.hpp"
 
 using pae::algo::Dijkstra;
 using pae::algo::RunConfig;

@@ -1,9 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <sstream>
+#include <string>
 
 #include "pae/algorithms/BFS.hpp"
 #include "pae/io/GridLoader.hpp"
+#include "pae/metrics/Metrics.hpp"
 #include "pae/visualization/CliVisualizer.hpp"
 #include "pae/visualization/NullVisualizer.hpp"
 

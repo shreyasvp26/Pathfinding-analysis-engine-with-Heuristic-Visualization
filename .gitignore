@@ -51,6 +51,9 @@ LastTestsFailed.log
 benchmarks/results/
 benchmarks/*.json
 benchmarks/*.csv
+pae/benchmarks/results/
+pae/benchmarks/*.json
+pae/benchmarks/*.csv
 
 # ── Secrets / local env ──────────────────────────────────────────────
 .env

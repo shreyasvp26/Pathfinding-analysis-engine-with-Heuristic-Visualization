@@ -3,7 +3,7 @@
 #include "pae/io/GridLoader.hpp"
 
 using pae::io::GridLoader;
-using pae::io::IoError;
+using pae::IoError;
 
 TEST_CASE("GridLoader parses a tiny grid", "[io][grid]") {
     const auto text =

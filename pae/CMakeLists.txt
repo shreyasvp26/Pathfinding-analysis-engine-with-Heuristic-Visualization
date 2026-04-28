@@ -25,6 +25,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
+# ── Public header path (single source of truth) ──────────────────────
+add_library(pae_headers INTERFACE)
+target_include_directories(pae_headers INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+
 # ── Compile flags helper ──────────────────────────────────────────────
 add_library(pae_warnings INTERFACE)
 if(MSVC)
@@ -47,22 +53,22 @@ if(PAE_SANITIZERS AND NOT MSVC)
         -fsanitize=address -fsanitize=undefined)
 endif()
 
-# ── Subdirectories ────────────────────────────────────────────────────
-add_subdirectory(src/core)
-add_subdirectory(src/io)
-add_subdirectory(src/heuristics)
-add_subdirectory(src/algorithms)
-add_subdirectory(src/visualization)
-add_subdirectory(src/metrics)
-add_subdirectory(src/factory)
-add_subdirectory(src/cli)
+# ── Subdirectories (declared in dependency order) ─────────────────────
+add_subdirectory(src/core)            # depends on:    -
+add_subdirectory(src/io)              # depends on:    core
+add_subdirectory(src/metrics)         # interface lib; depends on: core
+add_subdirectory(src/visualization)   # depends on:    core, metrics
+add_subdirectory(src/heuristics)      # depends on:    core
+add_subdirectory(src/algorithms)      # depends on:    core, heuristics, metrics
+add_subdirectory(src/factory)         # depends on:    algorithms, heuristics, visualization, metrics
+add_subdirectory(src/benchmark)       # depends on:    everything above
+add_subdirectory(src/cli)             # depends on:    everything (composition root)
 
 # ── Main binary ───────────────────────────────────────────────────────
 add_executable(pae src/cli/main.cpp)
 target_link_libraries(pae
     PRIVATE
-        pae_app
-        pae_factory
+        pae_app           # transitively brings in everything else
         pae_warnings
 )
 
