@@ -56,7 +56,7 @@ endif()
 # ── Subdirectories (declared in dependency order) ─────────────────────
 add_subdirectory(src/core)            # depends on:    -
 add_subdirectory(src/io)              # depends on:    core
-add_subdirectory(src/metrics)         # interface lib; depends on: core
+add_subdirectory(src/metrics)         # depends on:    core (carries Metrics POD + RSS probe)
 add_subdirectory(src/visualization)   # depends on:    core, metrics
 add_subdirectory(src/heuristics)      # depends on:    core
 add_subdirectory(src/algorithms)      # depends on:    core, heuristics, metrics

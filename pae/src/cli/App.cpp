@@ -14,6 +14,7 @@
 #include "pae/metrics/Benchmark.hpp"
 #include "pae/metrics/Metrics.hpp"
 #include "pae/metrics/Report.hpp"
+#include "pae/metrics/Rss.hpp"
 #include "pae/visualization/CliVisualizer.hpp"
 #include "pae/visualization/NullVisualizer.hpp"
 
@@ -40,7 +41,7 @@ int App::run() {
 
     if (cfg_.benchmark) {
         const std::vector<std::string> algoNames     {"astar", "dijkstra", "bfs"};
-        const std::vector<std::string> heuristicNames{"manhattan", "euclidean", "chebyshev"};
+        const std::vector<std::string> heuristicNames{"manhattan", "euclidean", "chebyshev", "octile"};
         metrics::Benchmark::Config bcfg{};
         auto runs = metrics::Benchmark::sweep(
             grid,
@@ -90,6 +91,9 @@ int App::run() {
         << "nodes_enqueued:  " << m.nodesEnqueued << '\n'
         << "wall_us:         " << m.wallMicros    << '\n'
         << "approx_peak_B:   " << m.approxPeakBytes << '\n';
+    if constexpr (metrics::trueRssAvailable()) {
+        std::cout << "rss_delta_B:     " << m.rssDeltaBytes << '\n';
+    }
     return result.found ? 0 : 1;
 }
 

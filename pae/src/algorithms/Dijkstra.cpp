@@ -11,6 +11,7 @@
 #include "pae/core/Grid.hpp"
 #include "pae/core/Node.hpp"
 #include "pae/metrics/Metrics.hpp"
+#include "pae/metrics/Rss.hpp"
 #include "pae/visualization/IVisualizer.hpp"
 
 namespace pae::algo {
@@ -30,9 +31,10 @@ Result Dijkstra::run(const core::Grid&    grid,
     using core::Coord;
     using core::Node;
 
-    const auto t0      = clock::now();
-    const auto V       = grid.width() * grid.height();
-    const auto goalIdx = grid.toIndex(grid.end());
+    const auto t0       = clock::now();
+    const auto rssStart = metrics::maxResidentBytes();
+    const auto V        = grid.width() * grid.height();
+    const auto goalIdx  = grid.toIndex(grid.end());
 
     std::vector<std::int64_t> gScore(static_cast<std::size_t>(V), INF);
     std::vector<std::int32_t> parent(static_cast<std::size_t>(V), -1);
@@ -125,6 +127,11 @@ Result Dijkstra::run(const core::Grid&    grid,
             static_cast<std::int64_t>(sizeof(Node)) * static_cast<std::int64_t>(peakOpen) +
             static_cast<std::int64_t>(sizeof(std::int64_t)) * V +
             static_cast<std::int64_t>(sizeof(std::int32_t)) * V;
+
+        if constexpr (metrics::trueRssAvailable()) {
+            const auto rssEnd = metrics::maxResidentBytes();
+            metrics->rssDeltaBytes = rssEnd - rssStart;
+        }
     }
     if (viz) {
         if (result.found) {

@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     auto grid = pae::io::GridLoader::loadFromFile(mapPath);
 
     const std::vector<std::string> algos {"astar", "dijkstra", "bfs"};
-    const std::vector<std::string> heurs {"manhattan", "euclidean", "chebyshev"};
+    const std::vector<std::string> heurs {"manhattan", "euclidean", "chebyshev", "octile"};
 
     pae::metrics::Benchmark::Config cfg{};
     cfg.repetitions = reps;

@@ -22,6 +22,7 @@ struct Aggregate {
     std::int64_t pathLen{0};
     std::int64_t pathCost{0};
     std::int64_t approxBytes{0};
+    std::int64_t rssDelta{0};
     int          samples{0};
 };
 
@@ -44,6 +45,7 @@ Aggregate aggregate(const std::vector<BenchmarkRun>& sub) {
     a.pathLen      = sub.front().metrics.pathLength;
     a.pathCost     = sub.front().metrics.pathCost;
     a.approxBytes  = sub.front().metrics.approxPeakBytes;
+    a.rssDelta     = sub.front().metrics.rssDeltaBytes;
     a.samples      = static_cast<int>(sub.size());
     return a;
 }
@@ -75,7 +77,7 @@ void Report::printTable(std::ostream& os) const {
 }
 
 void Report::writeCsv(std::ostream& os) const {
-    os << "algorithm,heuristic,rep,expanded,enqueued,wall_us,path_len,path_cost,approx_peak_bytes\n";
+    os << "algorithm,heuristic,rep,expanded,enqueued,wall_us,path_len,path_cost,approx_peak_bytes,rss_delta_bytes\n";
     for (const auto& r : runs_) {
         os << r.algoName << ',' << r.heuristicName << ','
            << r.repIndex << ','
@@ -84,7 +86,8 @@ void Report::writeCsv(std::ostream& os) const {
            << r.metrics.wallMicros << ','
            << r.metrics.pathLength << ','
            << r.metrics.pathCost << ','
-           << r.metrics.approxPeakBytes << '\n';
+           << r.metrics.approxPeakBytes << ','
+           << r.metrics.rssDeltaBytes << '\n';
     }
 }
 
@@ -110,6 +113,7 @@ void Report::writeJson(std::ostream& os) const {
         os << "        \"path_len\": "  << a.pathLen << ",\n";
         os << "        \"path_cost\": " << a.pathCost << ",\n";
         os << "        \"approx_peak_bytes\": " << a.approxBytes << ",\n";
+        os << "        \"rss_delta_bytes\": "    << a.rssDelta << ",\n";
         os << "        \"wall_us\": { \"median\": " << a.medianMicros
            << ", \"p95\": " << a.p95Micros
            << ", \"min\": " << a.minMicros

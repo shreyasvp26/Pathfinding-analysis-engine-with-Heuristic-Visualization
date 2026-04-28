@@ -34,6 +34,7 @@ TEST_CASE("Registry knows all built-in heuristics after registerAll", "[registry
     REQUIRE(contains("manhattan"));
     REQUIRE(contains("euclidean"));
     REQUIRE(contains("chebyshev"));
+    REQUIRE(contains("octile"));
 }
 
 TEST_CASE("Registry::create throws on unknown name", "[registry][factory]") {

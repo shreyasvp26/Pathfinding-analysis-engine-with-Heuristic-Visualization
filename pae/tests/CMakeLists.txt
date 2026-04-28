@@ -7,6 +7,7 @@ add_executable(pae_tests
     test_manhattan.cpp
     test_euclidean.cpp
     test_chebyshev.cpp
+    test_octile.cpp
     test_bfs.cpp
     test_dijkstra.cpp
     test_astar.cpp

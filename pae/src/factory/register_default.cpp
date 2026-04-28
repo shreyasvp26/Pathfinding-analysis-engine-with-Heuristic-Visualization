@@ -9,6 +9,7 @@
 #include "pae/heuristics/Euclidean.hpp"
 #include "pae/heuristics/IHeuristic.hpp"
 #include "pae/heuristics/Manhattan.hpp"
+#include "pae/heuristics/Octile.hpp"
 
 namespace pae::factory {
 
@@ -44,6 +45,7 @@ void registerAll() {
     heurReg.reg("manhattan", [] { return std::make_unique<heur::Manhattan>(); });
     heurReg.reg("euclidean", [] { return std::make_unique<heur::Euclidean>(); });
     heurReg.reg("chebyshev", [] { return std::make_unique<heur::Chebyshev>(); });
+    heurReg.reg("octile",    [] { return std::make_unique<heur::Octile>(); });
 
     auto& algoReg = Registry<algo::IPathfinder>::instance();
     algoReg.reg("astar",    [] { return std::make_unique<DefaultAStar>(); });
