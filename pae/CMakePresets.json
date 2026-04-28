@@ -1,0 +1,112 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "description": "Debug build, no sanitizers (fastest iteration).",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "description": "Optimised build for benchmarks and shipped binaries.",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "san",
+      "displayName": "Debug + ASan + UBSan",
+      "description": "Memory-safety build. Used in CI on Linux Debug.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "PAE_SANITIZERS":   "ON"
+      }
+    },
+    {
+      "name": "perf",
+      "displayName": "Release + perf budgets",
+      "description": "Release build with PAE_PERF_BUDGET=ON for CI gating.",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "PAE_PERF_BUDGET":  "ON"
+      }
+    },
+    {
+      "name": "rss",
+      "displayName": "Release + true RSS",
+      "description": "Release with the OS-RSS metric enabled (Linux/macOS only).",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "PAE_TRUE_RSS":     "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "debug",   "configurePreset": "debug"   },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "san",     "configurePreset": "san"     },
+    { "name": "perf",    "configurePreset": "perf"    },
+    { "name": "rss",     "configurePreset": "rss"     }
+  ],
+  "testPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "san",
+      "configurePreset": "san",
+      "output": { "outputOnFailure": true }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "ci-debug",
+      "description": "Full Debug-build CI cycle: configure → build → ctest.",
+      "steps": [
+        { "type": "configure", "name": "debug" },
+        { "type": "build",     "name": "debug" },
+        { "type": "test",      "name": "debug" }
+      ]
+    },
+    {
+      "name": "ci-release",
+      "description": "Full Release-build CI cycle: configure → build → ctest.",
+      "steps": [
+        { "type": "configure", "name": "release" },
+        { "type": "build",     "name": "release" },
+        { "type": "test",      "name": "release" }
+      ]
+    },
+    {
+      "name": "ci-san",
+      "description": "Sanitizer cycle: configure (san) → build → ctest.",
+      "steps": [
+        { "type": "configure", "name": "san" },
+        { "type": "build",     "name": "san" },
+        { "type": "test",      "name": "san" }
+      ]
+    }
+  ]
+}

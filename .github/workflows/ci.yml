@@ -60,7 +60,7 @@ jobs:
       - name: Configure
         shell: bash
         run: |
-          cmake -S . -B pae/build \
+          cmake -S pae -B pae/build \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DPAE_SANITIZERS=${{ matrix.sanitizers }}
 
@@ -101,7 +101,7 @@ jobs:
 
       - name: Configure (Release + perf budgets)
         run: |
-          cmake -S . -B pae/build-rel \
+          cmake -S pae -B pae/build-rel \
             -DCMAKE_BUILD_TYPE=Release \
             -DPAE_PERF_BUDGET=ON
 

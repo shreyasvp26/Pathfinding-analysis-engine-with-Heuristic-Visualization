@@ -71,7 +71,7 @@ jobs:
 
       - name: Configure (compile_commands.json)
         run: |
-          cmake -S . -B pae/build \
+          cmake -S pae -B pae/build \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 

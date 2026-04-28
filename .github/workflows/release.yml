@@ -41,7 +41,7 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Configure (Release)
-        run: cmake -S . -B pae/build-rel -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S pae -B pae/build-rel -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: cmake --build pae/build-rel -j --config Release
