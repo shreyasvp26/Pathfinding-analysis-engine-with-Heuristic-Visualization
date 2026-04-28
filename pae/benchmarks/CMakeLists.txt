@@ -1,0 +1,14 @@
+add_executable(pae_bench
+    bench_pathfinders.cpp
+)
+target_link_libraries(pae_bench
+    PRIVATE
+        pae_core
+        pae_io
+        pae_heuristics
+        pae_algorithms
+        pae_visualization
+        pae_metrics
+        pae_factory
+        pae_warnings
+)

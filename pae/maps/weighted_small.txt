@@ -1,0 +1,7 @@
+# EC-08: two routes — top has heavy '9' cells; bottom is weight-1.
+# Dijkstra/A* should pick the bottom route; BFS should pick the top
+# (it's shorter by hop count if cells of any weight are 1 hop each).
+6 3
+S99..E
+......
+......

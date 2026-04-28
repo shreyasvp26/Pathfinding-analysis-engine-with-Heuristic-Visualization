@@ -1,0 +1,65 @@
+# ── Build artefacts ──────────────────────────────────────────────────
+build/
+build-*/
+out/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.lib
+*.exp
+*.pdb
+*.ilk
+
+# ── IDE / editor ─────────────────────────────────────────────────────
+.idea/
+.vs/
+.cache/
+.clangd/
+.vscode-test/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Dependencies fetched at configure ────────────────────────────────
+pae/build/_deps/
+_deps/
+
+# ── Tests / coverage / sanitizers ────────────────────────────────────
+*.gcda
+*.gcno
+*.gcov
+*.profraw
+*.profdata
+coverage/
+Testing/
+LastTest.log
+LastTestsFailed.log
+
+# ── Benchmark output ─────────────────────────────────────────────────
+benchmarks/results/
+benchmarks/*.json
+benchmarks/*.csv
+
+# ── Secrets / local env ──────────────────────────────────────────────
+.env
+.env.*
+*.pem
+*.key
+secrets/
+.local/
+
+# ── Logs ─────────────────────────────────────────────────────────────
+logs/
+*.log

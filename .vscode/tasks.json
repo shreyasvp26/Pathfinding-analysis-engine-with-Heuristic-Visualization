@@ -1,0 +1,66 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "configure (Debug + sanitizers)",
+      "type": "shell",
+      "command": "cmake -S . -B pae/build -DCMAKE_BUILD_TYPE=Debug -DPAE_SANITIZERS=ON",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "configure (Release)",
+      "type": "shell",
+      "command": "cmake -S . -B pae/build-rel -DCMAKE_BUILD_TYPE=Release",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "build (Debug)",
+      "type": "shell",
+      "command": "cmake --build pae/build -j",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "build (Release)",
+      "type": "shell",
+      "command": "cmake --build pae/build-rel -j",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "ctest --test-dir pae/build --output-on-failure",
+      "group": { "kind": "test", "isDefault": true },
+      "dependsOn": ["build (Debug)"]
+    },
+    {
+      "label": "test (Release)",
+      "type": "shell",
+      "command": "ctest --test-dir pae/build-rel --output-on-failure",
+      "group": "test",
+      "dependsOn": ["build (Release)"]
+    },
+    {
+      "label": "format",
+      "type": "shell",
+      "command": "bash pae/scripts/format.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "run-checks (sequential)",
+      "type": "shell",
+      "command": "bash pae/scripts/run-checks.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "benchmark",
+      "type": "shell",
+      "command": "bash pae/scripts/run-benchmarks.sh",
+      "dependsOn": ["build (Release)"],
+      "problemMatcher": []
+    }
+  ]
+}

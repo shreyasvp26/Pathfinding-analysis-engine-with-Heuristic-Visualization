@@ -1,0 +1,71 @@
+name: Auto-assign ticket number
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  assign-ticket:
+    name: Auto-prefix issue title with collaborator code
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check and assign ticket number
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue  = context.payload.issue;
+            const title  = issue.title;
+            const author = issue.user.login;
+
+            // Skip if title already has a ticket prefix (S001:, A001:, F-001:, etc.).
+            if (/^([A-Z]\d{3}|F-\d{3,}|B-\d{3,}|P-\d{3,}):/.test(title)) {
+              console.log(`Title already has a ticket prefix: ${title}`);
+              return;
+            }
+
+            // Map GitHub usernames to collaborator codes.
+            // Add new collaborators here when onboarding (see /setup-new-collaborator).
+            const prefixMap = {
+              'shreyasvp':   'S',
+              'shreyasvp26': 'S',
+              // 'collaborator-handle': 'X',
+            };
+
+            const prefix = prefixMap[author];
+            if (!prefix) {
+              console.log(`Unknown author: ${author}; skipping prefix.`);
+              return;
+            }
+
+            // Find the highest existing number for this prefix across all issues.
+            const allIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              state: 'all',
+              per_page: 100,
+            });
+
+            const pattern = new RegExp(`^${prefix}(\\d{3}):`);
+            let maxNum = 0;
+            for (const iss of allIssues) {
+              const m = iss.title.match(pattern);
+              if (m) {
+                const n = parseInt(m[1], 10);
+                if (n > maxNum) maxNum = n;
+              }
+            }
+
+            const nextNum  = String(maxNum + 1).padStart(3, '0');
+            const newTitle = `${prefix}${nextNum}: ${title}`;
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: issue.number,
+              title: newTitle,
+            });
+
+            console.log(`Renamed issue #${issue.number}: "${title}" → "${newTitle}"`);

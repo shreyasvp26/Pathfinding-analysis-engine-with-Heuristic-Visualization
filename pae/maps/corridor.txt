@@ -1,0 +1,3 @@
+# 1xN straight corridor — exercises EC-02 (linear path).
+10 1
+S........E

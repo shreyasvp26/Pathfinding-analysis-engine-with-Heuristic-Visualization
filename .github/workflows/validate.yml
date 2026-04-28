@@ -1,0 +1,99 @@
+name: PR Validation (Lint & Format)
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: clang-format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install clang-format 18
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-18
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-18 100
+
+      - name: Compute changed C++ files
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=$(git diff --name-only --diff-filter=ACMRT \
+            "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" \
+            | grep -E '\.(hpp|cpp|h|cc)$' || true)
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: clang-format dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${{ steps.changed.outputs.files }}" ]]; then
+            echo "No C++ files changed; skipping clang-format."
+            exit 0
+          fi
+          echo "${{ steps.changed.outputs.files }}" \
+            | xargs clang-format --dry-run --Werror
+
+  tidy:
+    name: clang-tidy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Install clang-tidy 18
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy-18
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-18 100
+
+      - name: Configure (compile_commands.json)
+        run: |
+          cmake -S . -B pae/build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Compute changed .cpp files
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=$(git diff --name-only --diff-filter=ACMRT \
+            "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" \
+            | grep -E '^pae/src/.*\.cpp$' || true)
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Run clang-tidy
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${{ steps.changed.outputs.files }}" ]]; then
+            echo "No pae/src/*.cpp changes; skipping clang-tidy."
+            exit 0
+          fi
+          echo "${{ steps.changed.outputs.files }}" \
+            | xargs clang-tidy -p pae/build --warnings-as-errors='*'

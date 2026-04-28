@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "pae (Debug, corridor.txt + bfs)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/pae/build/pae",
+      "args": [
+        "--map", "${workspaceFolder}/pae/maps/corridor.txt",
+        "--algo", "bfs",
+        "--visualize", "step"
+      ],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build (Debug)"
+    },
+    {
+      "name": "pae (Debug, maze_20x20.txt + astar manhattan)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/pae/build/pae",
+      "args": [
+        "--map", "${workspaceFolder}/pae/maps/maze_20x20.txt",
+        "--algo", "astar",
+        "--heuristic", "manhattan",
+        "--visualize", "step"
+      ],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build (Debug)"
+    },
+    {
+      "name": "pae_tests (single test)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/pae/build/tests/pae_tests",
+      "args": ["[heuristic]"],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build (Debug)"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+name: Release Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to package (e.g. v0.2.0). Leave blank to use the current ref.'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x86_64
+            archive: tar.gz
+          - os: macos-latest
+            label: macos-arm64
+            archive: tar.gz
+          - os: windows-latest
+            label: windows-x86_64
+            archive: zip
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure (Release)
+        run: cmake -S . -B pae/build-rel -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build pae/build-rel -j --config Release
+
+      - name: Stage artefacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p staging/pae
+          # Linux/macOS: pae binary at pae/build-rel/pae
+          # Windows:    pae binary at pae/build-rel/Release/pae.exe
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            cp pae/build-rel/Release/pae.exe staging/pae/
+          else
+            cp pae/build-rel/pae staging/pae/
+          fi
+          cp README.md SECURITY.md LICENSE staging/pae/
+          cp -r pae/maps staging/pae/
+          cp docs/CHANGELOG.md staging/pae/
+
+      - name: Package (tar.gz)
+        if: matrix.archive == 'tar.gz'
+        shell: bash
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          tar -czvf "pae-${tag}-${{ matrix.label }}.tar.gz" -C staging pae
+
+      - name: Package (zip)
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.inputs.tag || github.ref_name }}"
+          Compress-Archive -Path staging\pae -DestinationPath "pae-$tag-${{ matrix.label }}.zip"
+
+      - name: Compute SHA-256
+        shell: bash
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          if [[ "${{ matrix.archive }}" == "tar.gz" ]]; then
+            sha256sum "pae-${tag}-${{ matrix.label }}.tar.gz" > "pae-${tag}-${{ matrix.label }}.sha256"
+          else
+            sha256sum "pae-${tag}-${{ matrix.label }}.zip" > "pae-${tag}-${{ matrix.label }}.sha256"
+          fi
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: |
+            pae-*.tar.gz
+            pae-*.zip
+            pae-*.sha256
+          generate_release_notes: true

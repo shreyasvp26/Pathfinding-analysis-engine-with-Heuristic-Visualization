@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    "llvm-vs-code-extensions.vscode-clangd",
+    "ms-vscode.cmake-tools",
+    "twxs.cmake",
+    "vadimcn.vscode-lldb",
+    "github.copilot",
+    "github.copilot-chat",
+    "ms-vscode.vscode-github-issue-notebooks",
+    "eamodio.gitlens",
+    "editorconfig.editorconfig",
+    "yzhang.markdown-all-in-one",
+    "redhat.vscode-yaml"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.cpptools"
+  ]
+}

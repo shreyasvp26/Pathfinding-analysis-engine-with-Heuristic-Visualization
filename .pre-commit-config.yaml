@@ -1,0 +1,40 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: detect-private-key
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8
+    hooks:
+      - id: clang-format
+        types_or: [c++, c]
+        args: ["--style=file"]
+
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+      - id: cmake-format
+        additional_dependencies: [pyyaml>=5.1]
+      - id: cmake-lint
+
+  - repo: local
+    hooks:
+      - id: no-tabs-in-cpp
+        name: No tabs in C++ files
+        entry: '\t'
+        language: pygrep
+        types_or: [c++, c]
+      - id: no-bare-catch-all
+        name: No bare 'catch (...)'
+        entry: 'catch\s*\(\s*\.\.\.\s*\)'
+        language: pygrep
+        types_or: [c++]
+        exclude: 'pae/tests/.*'
