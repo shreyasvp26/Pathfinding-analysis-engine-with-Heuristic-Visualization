@@ -1,0 +1,33 @@
+%% C4-style component view. Renders natively on GitHub when wrapped in
+%% a ```mermaid fence; see design/architecture.md.
+graph TD
+    user([CLI user]):::ext
+    map[("pae/maps/*.txt")]:::ext
+
+    subgraph pae["pae binary"]
+        cli["pae::cli::App<br/>(composition root)"]
+        loader["pae::io::GridLoader"]
+        registry["pae::factory::Registry&lt;T&gt;<br/>(IPathfinder + IHeuristic)"]
+        algo["pae::algo::AStar /<br/>Dijkstra / BFS"]
+        heur["pae::heur::Manhattan /<br/>Euclidean / Chebyshev / Octile"]
+        viz["pae::viz::CliVisualizer<br/>(or NullVisualizer)"]
+        metrics["pae::metrics::Metrics<br/>+ Rss probe"]
+        bench["pae::metrics::Benchmark<br/>+ Report"]
+    end
+
+    user -- "argv" --> cli
+    cli -- "load" --> loader
+    loader -- "core::Grid" --> cli
+    cli -- "create(name)" --> registry
+    registry -- "unique_ptr&lt;...&gt;" --> cli
+    cli -- "run(grid, cfg, viz, &m)" --> algo
+    algo -- "uses" --> heur
+    algo -- "draws via" --> viz
+    algo -- "fills" --> metrics
+    cli -- "sweep(grid, ...)" --> bench
+    bench -- "instantiates" --> algo
+    map -- "ASCII" --> loader
+    metrics -- "summary" --> user
+    bench -- "table / CSV / JSON" --> user
+
+    classDef ext fill:#e8e8e8,stroke:#666,stroke-dasharray:3 3,color:#222;

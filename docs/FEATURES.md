@@ -55,7 +55,7 @@ under the new version heading.
 | F-206 | Cross-algorithm equivalence test (A\* with `h≡0` ≡ Dijkstra) | `@qa` | Completed | `test_cross_algorithm.cpp` (3 fixtures) |
 | F-207 | `tests/test_astar.cpp`, `test_dijkstra.cpp`, `test_euclidean.cpp` | `@qa` | Completed | |
 | F-208 | `pae --benchmark` mode prints comparison table | `@perf` | Completed | with median + p95 |
-| F-209 | Additional sample maps | `@core` | Pending | `maze_50x50.txt`, `open_arena_50x50.txt` (post-1.0) |
+| F-209 | Additional sample maps | `@core` | Completed | `maze_50x50.txt` (recursive-backtracker, seed 42) and `open_arena_50x50.txt` (density 0.30, seed 1) committed; reproducible via `pae/scripts/gen_maze.py` |
 
 ## V3 — Robustness
 
@@ -96,15 +96,19 @@ These rows enter `In Progress` only after v1.0 is tagged.
 
 | ID | Title | Owner | Target | Status |
 |----|-------|-------|--------|--------|
-| F-601 | `Octile` heuristic | `@heuristic` | v1.1 | Pending |
-| F-602 | Random maze generator (`pae --gen maze ...`) | `@core` | v1.1 | Pending |
+| F-601 | `Octile` heuristic | `@heuristic` | v0.2 | Completed | LLD §3.2 + new test cases; tight admissible heuristic for 8-conn-with-diag-√2 |
+| F-602 | Random maze generator | `@core` | v0.2 | Completed | `pae/scripts/gen_maze.py` (Python, deterministic, two modes) |
 | F-603 | Bidirectional A\* | `@algorithm` | v1.2 | Pending |
 | F-604 | Jump Point Search | `@algorithm` | v1.3 | Pending |
 | F-605 | Theta\* (any-angle) | `@algorithm` | v1.4 | Pending |
-| F-606 | True RSS metric (`getrusage`) | `@perf` | v1.5 | Pending |
+| F-606 | True RSS metric (`getrusage`) | `@perf` | v0.2 | Completed | `pae::metrics::maxResidentBytes` gated on `PAE_TRUE_RSS`; surfaces in CLI summary, JSON, CSV |
 | F-607 | Optional Raylib GUI visualizer | `@viz` | v1.6 | Pending |
 | F-608 | Logging framework (`pae::log`) | `@core` | v1.7 | Pending |
 | F-609 | JSON map format alternative | `@core` | v1.7 | Pending |
+| F-610 | `CMakePresets.json` for one-command builds | `@build` | v0.2 | Completed | 5 configure presets + 3 workflow presets, requires CMake ≥ 3.25 |
+| F-611 | Mermaid architecture / class / sequence diagrams | `@build` + all | v0.2 | Completed | `design/diagrams.md` + 4 `.mmd` source files |
+| F-612 | "How to add a new algorithm" tutorial | `@core` | v0.2 | Completed | `docs/TUTORIAL.md`; uses GBFS as the running example |
+| F-613 | Snapshot tests for `CliVisualizer` | `@viz` + `@qa` | v0.2 | Completed | corridor + obstacle maps; locks glyphs and row separators |
 
 ---
 

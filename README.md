@@ -2,8 +2,8 @@
 
 > A modular, OOP-first C++17 engine that compares pathfinding algorithms
 > (A\*, Dijkstra, BFS) under pluggable heuristics (Manhattan, Euclidean,
-> Chebyshev) on 2D grids — with step-by-step CLI visualization and
-> per-run performance metrics.
+> Chebyshev, Octile) on 2D grids — with step-by-step CLI visualization
+> and per-run performance metrics (including optional OS-level RSS).
 
 This repository is a **production-quality engineering blueprint**, not a
 toy visualizer. It is designed to demonstrate:
@@ -24,55 +24,70 @@ toy visualizer. It is designed to demonstrate:
 ## TL;DR — Quick start
 
 ```bash
+# 1. Configure + build with the bundled CMake preset (debug + tests).
 cd pae
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
+cmake --preset debug
+cmake --build --preset debug
 
-# Run a single algorithm with step-by-step CLI visualization
-./build/pae --map maps/maze_20x20.txt \
-            --algo astar \
-            --heuristic manhattan \
-            --visualize step
+# 2. Run a single algorithm with step-by-step CLI visualization.
+./build/debug/pae --map maps/maze_20x20.txt \
+                 --algo astar \
+                 --heuristic octile \
+                 --visualize step
 
-# Compare all algorithms on the same map (benchmark mode)
-./build/pae --map maps/maze_20x20.txt --benchmark
+# 3. Compare all algorithms × heuristics on the same map.
+./build/debug/pae --map maps/maze_50x50.txt --benchmark
 
-# Run the full unit-test suite (38 cases via Catch2)
-ctest --test-dir build --output-on-failure
+# 4. Run the full unit-test suite (44 cases via Catch2).
+ctest --preset debug
 
-# Sweep every map and write JSON benchmark results
+# 5. Sanitizer build (ASan + UBSan) — same tests, stricter runtime.
+cmake --workflow --preset ci-san
+
+# 6. Sweep every map and write JSON benchmark results.
 bash scripts/run-benchmarks.sh
 ```
+
+> Don't have CMake 3.25? Fall back to the long form:
+> `cmake -S pae -B pae/build -G Ninja -DCMAKE_BUILD_TYPE=Debug && cmake --build pae/build -j`.
+
+> Want OS-level RSS in the metrics output? Configure with the `rss`
+> preset: `cmake --preset rss && cmake --build --preset rss`.
 
 ---
 
 ## Implementation status
 
-The repository contains a **complete, working** v0.1.0 of the engine. It is
-not a stub. As of this commit it has been built, tested, sanitised, and
-benchmarked locally on Apple clang 21:
+The repository contains a **complete, working** revision of the engine.
+It is not a stub. As of the latest commit it has been built, tested,
+sanitised, and benchmarked locally on Apple clang 21:
 
 | Layer | Status | Evidence |
 |---|---|---|
-| Build (`CMake + Ninja`, `-Wall -Wextra -Werror`) | green | 27 build steps, 0 warnings |
-| Unit + property + cross-algorithm tests | **38 / 38 pass** | `ctest --test-dir pae/build` |
-| Sanitizer build (`-fsanitize=address,undefined`) | **38 / 38 pass** | `ctest --test-dir pae/build-san` |
+| Build (`CMake + Ninja`, `-Wall -Wextra -Werror`) | green | 0 warnings on 154 build steps |
+| Unit + property + cross-algorithm tests | **44 / 44 pass** | `ctest --preset debug` |
+| Sanitizer build (`-fsanitize=address,undefined`) | **44 / 44 pass**, no findings | `cmake --workflow --preset ci-san` |
+| RSS-enabled build (`PAE_TRUE_RSS=ON`) | green | `pae` summary now prints `rss_delta_B`; benchmark JSON gains `rss_delta_bytes` |
 | End-to-end CLI on every map | green | see [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) and the table below |
 | Benchmark harness on every map (`scripts/run-benchmarks.sh`) | green | JSON outputs in `pae/benchmarks/results/` (gitignored) |
 
-**Sample comparison** — `pae --benchmark --map pae/maps/maze_20x20.txt`:
+**Sample comparison** — `pae --benchmark --map pae/maps/open_arena_50x50.txt`:
 
 ```text
 algorithm   heuristic    expanded    wall_us(med)   wall_us(p95)   path_len   path_cost   memory_B
-astar       manhattan         146              56              57         59          58       5024
-astar       euclidean         157              57              74         59          58       5024
-astar       chebyshev         167              62              63         59          58       5024
-bfs         -                 198              39              42         59          58       2024
-dijkstra    -                 200              70              73         59          58       4992
+astar       manhattan         992             505             523        103         102      39600
+astar       octile           1371             577             623        103         102      32464
+astar       euclidean        1425             537             574        103         102      32112
+astar       chebyshev        1447             612             632        103         102      32080
+bfs         -                1726             300             314        103         102      12672
+dijkstra    -                1726             594             634        103         102      31408
 ```
 
-All five configurations agree on the optimal path (length 59, cost 58); A\*+Manhattan
-expands the fewest nodes — exactly as theory predicts for a 4-connected grid.
+Every configuration agrees on the optimal path (length 103, cost 102),
+and the heuristic ranking is **textbook-correct on a 4-connected grid**:
+Manhattan (tightest 4-conn h) < Octile < Euclidean < Chebyshev <
+BFS / Dijkstra (h ≡ 0). Octile sits where you'd expect — admissible for
+4-conn but loose, because its tightness target is 8-conn-with-diagonal-√2.
 
 The **weighted_small.txt** map showcases the BFS-vs-weighted divergence:
 
@@ -91,7 +106,9 @@ This is the exact textbook result the project brief asks the engine to demonstra
 | Area | Path |
 |------|------|
 | **Project plan / blueprint** | [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) |
+| **How to add a new algorithm (walkthrough)** | [`docs/TUTORIAL.md`](docs/TUTORIAL.md) |
 | **System architecture** | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| **Architecture / class / sequence diagrams** | [`design/diagrams.md`](design/diagrams.md) |
 | **Low-Level Design (classes, UML)** | [`docs/LLD.md`](docs/LLD.md) |
 | **Algorithm deep dive** | [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) |
 | **Heuristic design** | [`docs/HEURISTICS.md`](docs/HEURISTICS.md) |

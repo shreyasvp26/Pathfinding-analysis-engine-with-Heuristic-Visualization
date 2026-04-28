@@ -1,0 +1,31 @@
+%% Benchmark sweep: `pae --map ... --benchmark`.
+%% Mirrors src/benchmark/Benchmark.cpp::sweep + Report::printTable.
+sequenceDiagram
+    actor User
+    participant App as cli::App
+    participant Bench as metrics::Benchmark
+    participant Reg as factory::Registry
+    participant Algo as algo::IPathfinder
+    participant Heur as heur::IHeuristic
+    participant M as metrics::Metrics
+    participant Rep as metrics::Report
+
+    User->>App: argv (+ --benchmark)
+    App->>Bench: sweep(grid, algos[], heurs[], cfg)
+    loop for each (algo, heur) cell
+        loop reps + warmup
+            Bench->>Reg: create(algo)
+            Reg-->>Bench: unique_ptr<IPathfinder>
+            opt astar
+                Bench->>Reg: create(heur)
+                Reg-->>Bench: unique_ptr<IHeuristic>
+            end
+            Bench->>Algo: run(grid, cfg, NullViz, &m)
+            Algo->>M: fill metrics
+            Algo-->>Bench: Result
+        end
+    end
+    Bench-->>App: vector<BenchmarkRun>
+    App->>Rep: Report(runs)
+    App->>Rep: printTable(stdout)
+    Rep-->>User: aggregated table (median + p95)

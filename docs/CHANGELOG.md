@@ -17,6 +17,15 @@ Conventions (parity with `ssm_calender` and `Jyotish AI`):
 ## [Unreleased]
 
 ### Added
+- feat(heuristics): `Octile` distance heuristic — the **tight** admissible heuristic for 8-connectivity with diagonal cost √2. Registered under name `"octile"` and wired into the benchmark sweep.
+- feat(metrics): true OS-level RSS probe (`pae::metrics::maxResidentBytes`, `getrusage(RUSAGE_SELF)`). Gated behind the new `PAE_TRUE_RSS` CMake option (default OFF, no-op on Windows). When ON, every algorithm fills `Metrics::rssDeltaBytes` and the CLI summary + JSON / CSV reports include the RSS delta.
+- feat(maps): `pae/maps/maze_50x50.txt` (recursive-backtracker maze, seed 42) and `pae/maps/open_arena_50x50.txt` (random-arena, density 0.30, seed 1) so benchmark numbers exercise enough state to actually matter.
+- chore(scripts): `pae/scripts/gen_maze.py` — deterministic, parameterised map generator with `maze` and `arena` modes.
+- build: `pae/CMakePresets.json` with `debug`, `release`, `san`, `perf`, `rss` configure presets and matching build / test / workflow presets, so contributors don't memorise flag combos.
+- design: `design/diagrams.md` plus four `.mmd` source files (`architecture`, `class_diagram`, `sequence_run`, `sequence_benchmark`). GitHub renders them inline; no Mermaid CLI required to read them. `design/README.md` updated to point at the new artifacts.
+- docs: `docs/TUTORIAL.md` — end-to-end walkthrough for adding a new algorithm to the engine, with the running GBFS example and the seven-touchpoint integration recipe.
+- test: snapshot-test cases for `CliVisualizer` that lock the rendered grid format on a corridor map and an obstacle map (3 new test cases total, paired with comments explaining what to update if a glyph or row separator changes).
+- test: 4 new property + closed-form tests for the `Octile` heuristic (admissibility vs Manhattan on 4-conn, tightness vs Chebyshev on 8-conn, symmetry, zero-on-self).
 - docs: comprehensive engineering blueprint — `ARCHITECTURE.md`, `LLD.md`, `ALGORITHMS.md`, `HEURISTICS.md`, `DATA_STRUCTURES.md`, `TESTING.md`, `PERFORMANCE.md`, `EXTENSIONS.md`, `ROADMAP.md`, `IMPLEMENTATION_PLAN.md`, `FOLDER_STRUCTURE.md`, `REQUIREMENTS.md`, `FEATURES.md`, `BUGS.md`.
 - docs: `AGENTS.md` orchestration map (Core, Algorithm, Heuristic, Visualization, Performance, QA, Build).
 - chore: repo skeleton — `README.md`, `SECURITY.md`, `LICENSE` (MIT), `.gitignore`, `.gitattributes`, `.editorconfig`, `.clang-format`, `.clang-tidy`, `.pre-commit-config.yaml`.
@@ -34,6 +43,9 @@ Conventions (parity with `ssm_calender` and `Jyotish AI`):
 - test: 38 Catch2 v3 test cases — `Grid`, `GridLoader`, all three heuristics (with property generators), all three algorithms, cross-algorithm equivalence (`A*(h≡0) == Dijkstra`), CLI parser edge cases, registry, and visualizer rendering.
 
 ### Changed
+- ci: every workflow (`ci.yml`, `validate.yml`, `release.yml`) now configures with `cmake -S pae -B pae/build*`, matching the README and the local scripts. Fixes the latent path mismatch where `release.yml` expected `pae/build-rel/pae` but the previous `-S .` configure produced `pae/build-rel/pae/pae`.
+- build(metrics): `pae_metrics` is now a real STATIC library (was INTERFACE) so it can carry the new `Rss.cpp` translation unit. The dependency cycle break (split into `pae_metrics` + `pae_benchmark`) is preserved.
+- feat(cli, bench): the `--benchmark` sweep now iterates `{manhattan, euclidean, chebyshev, octile}` (was 3 heuristics → 4). `--help` reflects the new heuristic.
 - build(metrics): split `pae_metrics` into a header-only INTERFACE library (struct only) and a new `pae_benchmark` static library (orchestration), eliminating the latent `pae_metrics ↔ pae_algorithms` dependency cycle.
 - build(headers): single `pae_headers` interface library now holds the public include path; sub-CMakeLists no longer depend on `${CMAKE_SOURCE_DIR}` so the project builds correctly under either `cmake -S . -B build` or `cmake -S pae -B build`.
 - build(scripts): `run-checks.sh` and `run-benchmarks.sh` now build via `cmake -S pae -B pae/build*` for path consistency.
@@ -54,10 +66,12 @@ Conventions (parity with `ssm_calender` and `Jyotish AI`):
 - security: documented threat model in `SECURITY.md`; pinned Catch2 dependency in `FetchContent`.
 
 ### Verified locally on Apple clang 21
-- 38 / 38 Catch2 tests pass in Debug.
-- 38 / 38 Catch2 tests pass under `-fsanitize=address,undefined`.
-- `pae --benchmark` on `maze_20x20.txt` produces a stable comparison: A*+Manhattan = 146 expanded, A*+Euclidean = 157, A*+Chebyshev = 167, BFS = 198, Dijkstra = 200 — all converging on the same optimal path (length 59, cost 58).
+- **44 / 44** Catch2 tests pass in Debug (was 38; +4 octile, +2 visualizer snapshot).
+- **44 / 44** Catch2 tests pass under `-fsanitize=address,undefined`, no findings.
+- `pae --benchmark` on `maze_20x20.txt` produces a stable comparison: A*+Manhattan = 146 expanded, A*+Octile = 157, A*+Euclidean = 157, A*+Chebyshev = 167, BFS = 198, Dijkstra = 200 — all converging on the same optimal path (length 59, cost 58).
+- `pae --benchmark` on the new `open_arena_50x50.txt` shows the heuristic ranking textbook-correctly under load: A*+Manhattan = 992 expanded, A*+Octile = 1371, A*+Euclidean = 1425, A*+Chebyshev = 1447, BFS / Dijkstra = 1726.
 - `pae` correctly demonstrates BFS-vs-weighted divergence on `weighted_small.txt` (BFS picks 6-step heavy path; Dijkstra/A* pick 8-step weight-aware path).
+- Built with `-DPAE_TRUE_RSS=ON`, the CLI prints `rss_delta_B: 32768` on `maze_20x20.txt` runs and the JSON / CSV benchmark reports gain a `rss_delta_bytes` column.
 
 ---
 

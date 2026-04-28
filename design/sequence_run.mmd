@@ -1,0 +1,29 @@
+%% Single-run sequence: `pae --map ... --algo astar`.
+%% Mirrors src/cli/App.cpp::run.
+sequenceDiagram
+    actor User
+    participant App as cli::App
+    participant Loader as io::GridLoader
+    participant Reg as factory::Registry
+    participant H as heur::Manhattan
+    participant A as algo::AStar
+    participant V as viz::CliVisualizer
+    participant M as metrics::Metrics
+
+    User->>App: argv
+    App->>Loader: loadFromFile(map)
+    Loader-->>App: core::Grid
+    App->>Reg: create("manhattan")
+    Reg-->>App: unique_ptr<IHeuristic>
+    App->>A: AStar(*h)
+    App->>A: run(grid, cfg, viz, &m)
+    A->>V: onStart(grid)
+    loop while open set non-empty
+        A->>A: pop best, push neighbours
+        A->>V: onExpand(node, grid)
+    end
+    A->>V: onPath(path, grid)
+    A->>M: write metrics
+    A->>V: onFinish(metrics)
+    A-->>App: Result
+    App-->>User: summary lines + exit code

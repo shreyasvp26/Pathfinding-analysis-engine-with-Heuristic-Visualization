@@ -1,0 +1,105 @@
+%% UML class diagram. Mirrors docs/LLD.md class signatures. Wrap
+%% in a ```mermaid fence on GitHub for inline rendering.
+classDiagram
+    direction LR
+
+    class IPathfinder {
+        <<interface>>
+        +run(grid, cfg, viz*, m*) Result
+        +name() string_view
+    }
+    class AStar {
+        -h: IHeuristic&
+        +AStar(IHeuristic&)
+        +run(...) Result
+    }
+    class Dijkstra {
+        +run(...) Result
+    }
+    class BFS {
+        +run(...) Result
+    }
+
+    class IHeuristic {
+        <<interface>>
+        +estimate(a, b) double
+        +name() string_view
+    }
+    class Manhattan
+    class Euclidean
+    class Chebyshev
+    class Octile
+
+    class IVisualizer {
+        <<interface>>
+        +onStart(grid) void
+        +onExpand(node, grid) void
+        +onPath(path, grid) void
+        +onFinish(metrics) void
+    }
+    class CliVisualizer
+    class NullVisualizer
+
+    class Grid {
+        -cells_: vector~Cell~
+        -start_, end_: Coord
+        +at(c) Cell
+        +width() int
+        +height() int
+        +inBounds(c) bool
+    }
+
+    class Metrics {
+        +nodesExpanded: i64
+        +nodesEnqueued: i64
+        +pathLength:    i64
+        +pathCost:      i64
+        +wallMicros:    i64
+        +approxPeakBytes: i64
+        +rssDeltaBytes: i64
+    }
+
+    class Result {
+        +found: bool
+        +path:  vector~Coord~
+        +totalCost: i64
+    }
+
+    class App {
+        -cfg_: AppConfig
+        +run() int
+    }
+
+    class Registry~T~ {
+        +reg(name, factory)
+        +create(name) unique_ptr~T~
+        +names() vector~string~
+    }
+
+    IPathfinder <|.. AStar
+    IPathfinder <|.. Dijkstra
+    IPathfinder <|.. BFS
+
+    IHeuristic <|.. Manhattan
+    IHeuristic <|.. Euclidean
+    IHeuristic <|.. Chebyshev
+    IHeuristic <|.. Octile
+
+    IVisualizer <|.. CliVisualizer
+    IVisualizer <|.. NullVisualizer
+
+    AStar ..> IHeuristic : depends on
+    AStar ..> Grid       : reads
+    AStar ..> Metrics    : writes
+    AStar ..> IVisualizer: notifies
+
+    App ..> Registry : creates
+    App ..> IPathfinder : owns
+    App ..> IHeuristic  : owns
+    App ..> Grid : owns
+    App ..> CliVisualizer
+    App ..> NullVisualizer
+
+    AStar --> Result
+    Dijkstra --> Result
+    BFS --> Result
