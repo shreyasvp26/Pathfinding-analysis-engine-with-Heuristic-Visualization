@@ -16,7 +16,12 @@ using pae::io::GridLoader;
 using pae::metrics::Metrics;
 using pae::tests::ZeroHeuristic;
 
-TEST_CASE("A* with h≡0 matches Dijkstra path cost", "[cross][algo]") {
+// NOTE: ASCII-only TEST_CASE name on purpose. ctest passes the case name
+// as an argv string to the test binary, and Windows argv is decoded with
+// the system code page (CP-1252 / etc.), which mangles non-ASCII bytes
+// before Catch2 sees them. We hit this with the unicode equivalence sign
+// `≡` (U+2261); rename → ASCII fixed it.
+TEST_CASE("A* with h equal 0 matches Dijkstra path cost", "[cross][algo]") {
     const auto map = GENERATE(
         std::string{"5 1\nS...E\n"},
         std::string{"3 3\nS..\n.#.\n..E\n"},
