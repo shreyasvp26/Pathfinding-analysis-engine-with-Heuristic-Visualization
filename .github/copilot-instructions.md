@@ -94,14 +94,21 @@ When a task spans multiple V-phases or workstreams (see
 
 | What | Command | When |
 |------|--------|------|
-| Configure (Debug) | `cmake -S . -B pae/build -DCMAKE_BUILD_TYPE=Debug -DPAE_SANITIZERS=ON` | once per change of CMake files |
-| Configure (Release) | `cmake -S . -B pae/build-rel -DCMAKE_BUILD_TYPE=Release` | for benchmarks / perf budget |
-| Build | `cmake --build pae/build -j` | after every code change |
-| Tests | `ctest --test-dir pae/build --output-on-failure` | after every code change |
+| Configure (Debug + sanitizers) | `cmake --preset san` (or `cmake -S pae -B pae/build -DCMAKE_BUILD_TYPE=Debug -DPAE_SANITIZERS=ON`) | once per change of CMake files |
+| Configure (Release) | `cmake --preset release` (or `cmake -S pae -B pae/build-rel -DCMAKE_BUILD_TYPE=Release`) | for benchmarks / perf budget |
+| Build | `cmake --build --preset debug` (or `cmake --build pae/build -j`) | after every code change |
+| Tests | `ctest --preset debug` (or `ctest --test-dir pae/build --output-on-failure`) | after every code change |
 | Specific test label | `ctest --test-dir pae/build -L heuristic` | targeted |
+| Perf-budget tests (opt-in) | `cmake --preset perf && cmake --build --preset perf && ctest --test-dir pae/build/perf -L perf --output-on-failure` | when `algo/`, `heur/`, `core/`, `metrics/` change |
 | Format check | `clang-format --dry-run --Werror $(git ls-files '*.hpp' '*.cpp')` | before commit |
 | Tidy check | `clang-tidy -p pae/build $(git ls-files 'pae/src/**/*.cpp')` | before commit |
-| Bench (when perf-relevant) | `./pae/build-rel/benchmarks/pae_bench --json > after.json && python pae/scripts/perf_diff.py before.json after.json` | when `algo/`, `heur/`, `core/`, `metrics/` change |
+| Bench (when perf-relevant) | `./pae/build/release/benchmarks/pae_bench --json > after.json && python pae/scripts/perf_diff.py before.json after.json` | when `algo/`, `heur/`, `core/`, `metrics/` change |
+
+> **Configure path.** The root `CMakeLists.txt` simply does
+> `add_subdirectory(pae)` so you must configure with `-S pae` (or the
+> preset equivalents) to land binaries at the documented paths.
+> `-S .` is rejected by CI since it produces a nested
+> `pae/build-rel/pae/pae` layout that `release.yml` does not expect.
 
 The `/parallel-checks` prompt
 ([`./prompts/parallel-checks.prompt.md`](prompts/parallel-checks.prompt.md))

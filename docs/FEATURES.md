@@ -22,7 +22,7 @@ under the new version heading.
 | F-004 | Top-level `CMakeLists.txt` delegating to `pae/CMakeLists.txt` | `@build` | Completed | |
 | F-005 | `pae/CMakeLists.txt` builds the engine + binary; Catch2 via FetchContent | `@build` | Completed | dep DAG with `pae_headers` interface; split `pae_metrics` (header) ↔ `pae_benchmark` (impl) to break cycle |
 | F-006 | `tests/test_smoke.cpp` passes via CTest | `@qa` | Completed | one of 38 |
-| F-007 | CI matrix (Linux, macOS, Windows) green on empty repo | `@build` | Pending | scaffolded in `.github/workflows/ci.yml`; needs first push |
+| F-007 | CI matrix (Linux, macOS, Windows) green | `@build` | Completed | all 6 matrix jobs (Linux / macOS / Windows × Debug / Release) green on run 25076456704 |
 
 ## V1 — Vertical slice MVP
 
@@ -64,7 +64,7 @@ under the new version heading.
 | F-301 | `pae::heur::Chebyshev` | `@heuristic` | Completed | LLD §3.2 |
 | F-302 | 8-connectivity (`Grid::neighbors8`, `--diagonal` flag) | `@core` + `@algorithm` | Completed | both algorithms branch on `cfg.diagonal` |
 | F-303 | Property tests for heuristic invariants | `@qa` | Completed | non-negativity, symmetry, identity (4096+ cases per heuristic) |
-| F-304 | ASan + UBSan jobs in CI | `@qa` + `@build` | Pending | locally verified clean; CI wiring is in `ci.yml` |
+| F-304 | ASan + UBSan jobs in CI | `@qa` + `@build` | Completed | `ci.yml` matrix sets `sanitizers: ON` for ubuntu-latest Debug; green on run 25076456704 |
 | F-305 | Edge-case maps (dense obstacle, isolated start, full-blocked goal) | `@qa` | Completed | `no_path.txt` covers full-row blocker |
 | F-306 | `--diagonal` + Manhattan combo guard | `@core` | Completed | App refuses with explanatory error and exit 1 |
 
@@ -75,9 +75,9 @@ under the new version heading.
 | F-401 | `Benchmark::sweep` with warmup + median + p95 | `@perf` | Completed | `Config{warmup=3, repetitions=30}` defaults |
 | F-402 | `Report::writeCsv`, `writeJson` | `@perf` | Completed | `pae_bench` accepts `--csv`, `--json` |
 | F-403 | `bench_pathfinders.cpp` runs against every map in `pae/maps/` | `@perf` | Completed | via `scripts/run-benchmarks.sh` |
-| F-404 | NFR-2 perf budget tests in CI | `@perf` + `@build` | Pending | `PAE_PERF_BUDGET` option scaffolded |
-| F-405 | Baselines committed in `pae/benchmarks/baselines/` | `@perf` | Pending | will be populated on first CI run |
-| F-406 | CI commenter: posts perf delta vs main on PRs | `@build` | Pending | needs `auto-ticket.yml` extension |
+| F-404 | NFR-2 perf budget tests in CI | `@perf` + `@build` | Completed | 3 `[perf]`-tagged ctest cases (`test_perf_budget.cpp`) gated on `PAE_PERF_BUDGET=ON`; `--preset perf` enables them; `ctest -L perf` runs only them |
+| F-405 | Baselines committed in `pae/benchmarks/baselines/` | `@perf` | Pending | will be populated on first PR run; perf-budget tests use absolute thresholds for now |
+| F-406 | CI commenter: posts perf delta vs main on PRs | `@build` | Pending | needs F-405 first |
 
 ## V5 — Release polish
 
@@ -86,7 +86,7 @@ under the new version heading.
 | F-501 | `--help`, `--version`, exit-code matrix matches REQUIREMENTS.md §FR-6 | `@core` | Completed | exit 0 success, 1 user-error / not-found, 2 engine-error |
 | F-502 | `docs/CHANGELOG.md` `[1.0.0]` entry | all | Pending | block currently in `[Unreleased]` |
 | F-503 | Tag `v1.0.0`; release workflow attaches Linux/macOS/Windows binaries | `@build` | Pending | |
-| F-504 | README quick-start verified by fresh-clone CI job | `@build` | Pending | |
+| F-504 | README quick-start verified by fresh-clone CI job | `@build` | Completed | new `readme-smoke` job in `ci.yml` runs the documented preset commands verbatim |
 
 ---
 

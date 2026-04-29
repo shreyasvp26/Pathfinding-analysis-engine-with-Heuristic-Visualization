@@ -17,6 +17,8 @@ Conventions (parity with `ssm_calender` and `Jyotish AI`):
 ## [Unreleased]
 
 ### Added
+- ci+test: real perf-budget ctest cases — `test_perf_budget.cpp` (F-404) with three `[perf]`-tagged cases that run `Benchmark::sweep` on `maze_20x20`, `open_arena_50x50`, and `maze_50x50` and assert order-of-magnitude wall-time + path-cost budgets. Compiled only with `PAE_PERF_BUDGET=ON` (e.g. `cmake --preset perf`); the `perf-budget` job in `ci.yml` now actually has tests to run via `ctest -L perf`.
+- ci: new `readme-smoke` job (F-504) that runs the README quick-start commands verbatim — `cmake --preset debug`, `cmake --build --preset debug`, `ctest --preset debug`, plus a real CLI run and a real `--benchmark` invocation. Catches drift between docs and reality on every `main` push.
 - feat(heuristics): `Octile` distance heuristic — the **tight** admissible heuristic for 8-connectivity with diagonal cost √2. Registered under name `"octile"` and wired into the benchmark sweep.
 - feat(metrics): true OS-level RSS probe (`pae::metrics::maxResidentBytes`, `getrusage(RUSAGE_SELF)`). Gated behind the new `PAE_TRUE_RSS` CMake option (default OFF, no-op on Windows). When ON, every algorithm fills `Metrics::rssDeltaBytes` and the CLI summary + JSON / CSV reports include the RSS delta.
 - feat(maps): `pae/maps/maze_50x50.txt` (recursive-backtracker maze, seed 42) and `pae/maps/open_arena_50x50.txt` (random-arena, density 0.30, seed 1) so benchmark numbers exercise enough state to actually matter.
@@ -43,6 +45,7 @@ Conventions (parity with `ssm_calender` and `Jyotish AI`):
 - test: 38 Catch2 v3 test cases — `Grid`, `GridLoader`, all three heuristics (with property generators), all three algorithms, cross-algorithm equivalence (`A*(h≡0) == Dijkstra`), CLI parser edge cases, registry, and visualizer rendering.
 
 ### Changed
+- docs(copilot): verification table in `.github/copilot-instructions.md` now uses `cmake --preset` commands and `cmake -S pae` for the long form, matching the actual CI. Adds a callout that `-S .` is rejected because of the nested-directory layout. Stops new contributors and Copilot from regenerating the old, broken commands.
 - ci: every workflow (`ci.yml`, `validate.yml`, `release.yml`) now configures with `cmake -S pae -B pae/build*`, matching the README and the local scripts. Fixes the latent path mismatch where `release.yml` expected `pae/build-rel/pae` but the previous `-S .` configure produced `pae/build-rel/pae/pae`.
 - build(metrics): `pae_metrics` is now a real STATIC library (was INTERFACE) so it can carry the new `Rss.cpp` translation unit. The dependency cycle break (split into `pae_metrics` + `pae_benchmark`) is preserved.
 - feat(cli, bench): the `--benchmark` sweep now iterates `{manhattan, euclidean, chebyshev, octile}` (was 3 heuristics → 4). `--help` reflects the new heuristic.
@@ -68,6 +71,7 @@ Conventions (parity with `ssm_calender` and `Jyotish AI`):
 ### Verified locally on Apple clang 21
 - **44 / 44** Catch2 tests pass in Debug (was 38; +4 octile, +2 visualizer snapshot).
 - **44 / 44** Catch2 tests pass under `-fsanitize=address,undefined`, no findings.
+- **47 / 47** Catch2 tests pass with `cmake --preset perf` (44 regular + 3 perf-budget); `ctest -L perf` runs only the budget cases and they finish in ≈ 20 ms total.
 - `pae --benchmark` on `maze_20x20.txt` produces a stable comparison: A*+Manhattan = 146 expanded, A*+Octile = 157, A*+Euclidean = 157, A*+Chebyshev = 167, BFS = 198, Dijkstra = 200 — all converging on the same optimal path (length 59, cost 58).
 - `pae --benchmark` on the new `open_arena_50x50.txt` shows the heuristic ranking textbook-correctly under load: A*+Manhattan = 992 expanded, A*+Octile = 1371, A*+Euclidean = 1425, A*+Chebyshev = 1447, BFS / Dijkstra = 1726.
 - `pae` correctly demonstrates BFS-vs-weighted divergence on `weighted_small.txt` (BFS picks 6-step heavy path; Dijkstra/A* pick 8-step weight-aware path).
