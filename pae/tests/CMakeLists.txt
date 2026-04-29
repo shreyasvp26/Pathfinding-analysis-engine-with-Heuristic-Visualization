@@ -13,6 +13,7 @@ set(PAE_TEST_SOURCES
     test_astar.cpp
     test_cross_algorithm.cpp
     test_visualizer.cpp
+    test_charts.cpp
     test_registry.cpp
     test_cli.cpp
 )

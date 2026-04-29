@@ -76,6 +76,100 @@ void Report::printTable(std::ostream& os) const {
     }
 }
 
+// -----------------------------------------------------------------------------
+// printCharts — ASCII bar charts for benchmark results.
+//
+// Layout: one chart per metric (wall-time median, nodes expanded,
+// path cost, approximate peak memory). One bar per (algo, heuristic)
+// row, normalised by the metric's max so every chart fits in the
+// same width. Colour mapping is by algorithm: astar = green,
+// dijkstra = cyan, bfs = yellow. When `color` is false the output is
+// pure 7-bit ASCII so the snapshot test in test_charts.cpp can lock
+// the format. See docs/PERFORMANCE.md "CLI bar charts".
+// -----------------------------------------------------------------------------
+namespace {
+
+constexpr const char* kAnsiReset  = "\x1b[0m";
+constexpr const char* kAnsiAStar  = "\x1b[1;32m";  // bright green
+constexpr const char* kAnsiDijkst = "\x1b[1;36m";  // bright cyan
+constexpr const char* kAnsiBfs    = "\x1b[1;33m";  // bright yellow
+
+constexpr int  kBarWidth = 40;
+constexpr char kFilled   = '#';
+constexpr char kEmpty    = ' ';
+
+const char* algoColor(const std::string& algo) {
+    if (algo == "astar")    return kAnsiAStar;
+    if (algo == "dijkstra") return kAnsiDijkst;
+    if (algo == "bfs")      return kAnsiBfs;
+    return "";
+}
+
+struct Row {
+    std::string  algo;
+    std::string  heur;
+    Aggregate    agg;
+};
+
+void renderChart(std::ostream&             os,
+                 const std::string&        title,
+                 const std::vector<Row>&   rows,
+                 std::int64_t              (*pick)(const Aggregate&),
+                 const char*               unit,
+                 bool                      color) {
+    std::int64_t maxVal = 0;
+    for (const auto& r : rows) maxVal = std::max(maxVal, pick(r.agg));
+    if (maxVal == 0) maxVal = 1;  // avoid division by zero
+
+    os << title << '\n';
+    for (const auto& r : rows) {
+        const auto val      = pick(r.agg);
+        const auto fraction = static_cast<double>(val) / static_cast<double>(maxVal);
+        const auto filled   = static_cast<int>(std::lround(fraction * kBarWidth));
+        const auto label    = r.algo + " " + (r.heur.empty() ? "-" : r.heur);
+
+        os << "  ";
+        os << std::left << std::setw(22) << label;
+        os << " |";
+        if (color) os << algoColor(r.algo);
+        for (int i = 0; i < filled;       ++i) os << kFilled;
+        if (color) os << kAnsiReset;
+        for (int i = filled; i < kBarWidth; ++i) os << kEmpty;
+        os << "| " << std::right << std::setw(10) << val << ' ' << unit << '\n';
+    }
+    os << '\n';
+}
+
+}  // namespace
+
+void Report::printCharts(std::ostream& os, bool color) const {
+    using Key = std::pair<std::string, std::string>;
+    std::map<Key, std::vector<BenchmarkRun>> grouped;
+    for (const auto& r : runs_) {
+        grouped[{r.algoName, r.heuristicName}].push_back(r);
+    }
+
+    std::vector<Row> rows;
+    rows.reserve(grouped.size());
+    for (auto& [k, rs] : grouped) {
+        rows.push_back(Row{k.first, k.second, aggregate(rs)});
+    }
+
+    os << "\n=== visual benchmark (bars normalised per chart) ===\n\n";
+
+    renderChart(os, "wall-time median (lower is faster)", rows,
+                [](const Aggregate& a) { return a.medianMicros; }, "us", color);
+
+    renderChart(os, "nodes expanded (lower = more directed search)", rows,
+                [](const Aggregate& a) { return a.expanded; }, "  ", color);
+
+    renderChart(os, "path cost (must be equal for optimal algorithms)", rows,
+                [](const Aggregate& a) { return a.pathCost; }, "  ", color);
+
+    renderChart(os, "approximate peak memory (bytes; lower is leaner)", rows,
+                [](const Aggregate& a) { return a.approxBytes; }, "B ", color);
+}
+
 void Report::writeCsv(std::ostream& os) const {
     os << "algorithm,heuristic,rep,expanded,enqueued,wall_us,path_len,path_cost,approx_peak_bytes,rss_delta_bytes\n";
     for (const auto& r : runs_) {

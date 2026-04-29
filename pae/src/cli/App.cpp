@@ -50,6 +50,7 @@ int App::run() {
             bcfg);
         metrics::Report report{std::move(runs)};
         report.printTable(std::cout);
+        report.printCharts(std::cout, cfg_.color);
         return 0;
     }
 

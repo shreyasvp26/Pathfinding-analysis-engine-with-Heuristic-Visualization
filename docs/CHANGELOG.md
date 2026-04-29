@@ -17,6 +17,9 @@ Conventions (parity with `ssm_calender` and `Jyotish AI`):
 ## [Unreleased]
 
 ### Added
+- viz(metrics): `Report::printCharts` — normalised in-terminal bar charts that follow every `pae --benchmark` table. Four charts (wall-time median, nodes expanded, path cost, approx peak memory), one bar per `(algo, heuristic)` row, ANSI-coloured by algorithm (astar = green, dijkstra = cyan, bfs = yellow). Honours the existing `--no-color` flag for plain-ASCII snapshot-safe output, and is locked by `test_charts.cpp`.
+- viz(scripts): `pae/scripts/render_dashboard.py` — turns one or many `pae_bench --json` files into a single self-contained HTML dashboard with Chart.js (CDN-loaded with a verified SRI hash). Per-map cards, sortable raw-numbers tables, and a cross-map comparison section. Python 3 stdlib only — no new runtime deps.
+- viz(scripts): `run-benchmarks.sh` now writes results into a per-run timestamped subdirectory (`pae/benchmarks/results/<ts>/`), renders `dashboard.html` next to them, and updates `pae/benchmarks/results/dashboard-latest.html` to point at the most recent sweep. `--no-dashboard` opts out.
 - ci+test: real perf-budget ctest cases — `test_perf_budget.cpp` (F-404) with three `[perf]`-tagged cases that run `Benchmark::sweep` on `maze_20x20`, `open_arena_50x50`, and `maze_50x50` and assert order-of-magnitude wall-time + path-cost budgets. Compiled only with `PAE_PERF_BUDGET=ON` (e.g. `cmake --preset perf`); the `perf-budget` job in `ci.yml` now actually has tests to run via `ctest -L perf`.
 - ci: new `readme-smoke` job (F-504) that runs the README quick-start commands verbatim — `cmake --preset debug`, `cmake --build --preset debug`, `ctest --preset debug`, plus a real CLI run and a real `--benchmark` invocation. Catches drift between docs and reality on every `main` push.
 - feat(heuristics): `Octile` distance heuristic — the **tight** admissible heuristic for 8-connectivity with diagonal cost √2. Registered under name `"octile"` and wired into the benchmark sweep.
@@ -69,9 +72,10 @@ Conventions (parity with `ssm_calender` and `Jyotish AI`):
 - security: documented threat model in `SECURITY.md`; pinned Catch2 dependency in `FetchContent`.
 
 ### Verified locally on Apple clang 21
-- **44 / 44** Catch2 tests pass in Debug (was 38; +4 octile, +2 visualizer snapshot).
-- **44 / 44** Catch2 tests pass under `-fsanitize=address,undefined`, no findings.
-- **47 / 47** Catch2 tests pass with `cmake --preset perf` (44 regular + 3 perf-budget); `ctest -L perf` runs only the budget cases and they finish in ≈ 20 ms total.
+- **47 / 47** Catch2 tests pass in Debug (was 44; +3 chart snapshot/contract tests).
+- **47 / 47** Catch2 tests pass under `-fsanitize=address,undefined`, no findings.
+- **50 / 50** Catch2 tests pass with `cmake --preset perf` (47 regular + 3 perf-budget); `ctest -L perf` runs only the budget cases and they finish in ≈ 20 ms total.
+- HTML dashboard (`render_dashboard.py`) verified end-to-end in a real browser: Chart.js loads via SRI, all 4 chart types render, cross-map comparison shows expected scaling.
 - `pae --benchmark` on `maze_20x20.txt` produces a stable comparison: A*+Manhattan = 146 expanded, A*+Octile = 157, A*+Euclidean = 157, A*+Chebyshev = 167, BFS = 198, Dijkstra = 200 — all converging on the same optimal path (length 59, cost 58).
 - `pae --benchmark` on the new `open_arena_50x50.txt` shows the heuristic ranking textbook-correctly under load: A*+Manhattan = 992 expanded, A*+Octile = 1371, A*+Euclidean = 1425, A*+Chebyshev = 1447, BFS / Dijkstra = 1726.
 - `pae` correctly demonstrates BFS-vs-weighted divergence on `weighted_small.txt` (BFS picks 6-step heavy path; Dijkstra/A* pick 8-step weight-aware path).

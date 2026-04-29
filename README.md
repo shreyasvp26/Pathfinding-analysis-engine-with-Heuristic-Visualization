@@ -101,6 +101,66 @@ This is the exact textbook result the project brief asks the engine to demonstra
 
 ---
 
+## Visualizing benchmark results
+
+The benchmark output isn't just a table any more — there are two visual
+layers on top of the same data:
+
+### 1. In-terminal ASCII bar charts
+
+Every `pae --benchmark` run now follows the table with normalised
+horizontal bar charts for wall-time, nodes expanded, path cost, and
+peak memory. Each algorithm gets its own ANSI colour (astar = green,
+dijkstra = cyan, bfs = yellow). Pass `--no-color` for snapshot-safe
+plain ASCII.
+
+```text
+wall-time median (lower is faster)
+  astar manhattan        |################################        |        579 us
+  astar octile           |#######################################  |        705 us
+  bfs -                  |#######################################  |        701 us
+  dijkstra -             |########################################|        720 us
+
+nodes expanded (lower = more directed search)
+  astar manhattan        |#######################                  |        992
+  bfs -                  |########################################|       1726
+  dijkstra -             |########################################|       1726
+```
+
+### 2. Self-contained HTML dashboard (Chart.js)
+
+```bash
+# Sweep every map AND render an HTML dashboard from the JSON outputs.
+bash pae/scripts/run-benchmarks.sh
+
+# Open the latest dashboard in your default browser:
+open pae/benchmarks/results/dashboard-latest.html   # macOS
+xdg-open pae/benchmarks/results/dashboard-latest.html  # Linux
+```
+
+The dashboard is a single self-contained HTML file. It loads
+[Chart.js](https://www.chartjs.org/) from jsDelivr (with a verified
+SRI hash so the browser rejects a tampered CDN response) and renders:
+
+- a card per map with bar charts for wall-time, expanded, path cost, and memory;
+- a "raw numbers" `<details>` table you can copy/paste;
+- a cross-map comparison section that puts every map on the same axes.
+
+The renderer is `pae/scripts/render_dashboard.py` — Python 3 stdlib
+only, no `pip install` required. You can also point it at any pile
+of `pae_bench --json` outputs:
+
+```bash
+pae/build/release/benchmarks/pae_bench --map pae/maps/maze_50x50.txt --json > maze.json
+python3 pae/scripts/render_dashboard.py maze.json -o dashboard.html
+```
+
+Snapshot of the rendered dashboard (3 maps, 18 run rows):
+
+![benchmark dashboard screenshot](docs/img/dashboard.png)
+
+---
+
 ## Where to look
 
 | Area | Path |

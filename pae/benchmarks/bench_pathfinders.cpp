@@ -54,6 +54,7 @@ int main(int argc, char** argv) {
         report.writeCsv(std::cout);
     } else {
         report.printTable(std::cout);
+        report.printCharts(std::cout, /*color=*/true);
     }
     return 0;
 }

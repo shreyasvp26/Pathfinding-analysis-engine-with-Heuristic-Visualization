@@ -109,6 +109,9 @@ These rows enter `In Progress` only after v1.0 is tagged.
 | F-611 | Mermaid architecture / class / sequence diagrams | `@build` + all | v0.2 | Completed | `design/diagrams.md` + 4 `.mmd` source files |
 | F-612 | "How to add a new algorithm" tutorial | `@core` | v0.2 | Completed | `docs/TUTORIAL.md`; uses GBFS as the running example |
 | F-613 | Snapshot tests for `CliVisualizer` | `@viz` + `@qa` | v0.2 | Completed | corridor + obstacle maps; locks glyphs and row separators |
+| F-614 | In-terminal ASCII bar charts after benchmark table | `@viz` + `@perf` | v0.3 | Completed | `Report::printCharts` (4 metrics, ANSI per algorithm); locked by `test_charts.cpp` |
+| F-615 | Self-contained HTML benchmark dashboard from `--json` output | `@viz` + `@build` | v0.3 | Completed | `pae/scripts/render_dashboard.py` (Python 3 stdlib only); Chart.js via CDN with verified SRI; per-map cards + cross-map comparison |
+| F-616 | `run-benchmarks.sh` auto-renders the dashboard | `@build` | v0.3 | Completed | per-run timestamped subdir + `dashboard-latest.html` symlink; opt out with `--no-dashboard` |
 
 ---
 
