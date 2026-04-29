@@ -52,7 +52,7 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Cache FetchContent deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: pae/build/_deps
           key: deps-${{ matrix.os }}-${{ hashFiles('pae/CMakeLists.txt', 'pae/tests/CMakeLists.txt') }}
@@ -94,7 +94,7 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Cache FetchContent deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: pae/build-rel/_deps
           key: deps-perf-${{ hashFiles('pae/CMakeLists.txt') }}
@@ -128,7 +128,7 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Cache FetchContent deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: pae/build/debug/_deps
           key: deps-readme-${{ hashFiles('pae/CMakeLists.txt') }}
